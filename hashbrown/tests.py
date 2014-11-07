@@ -1,10 +1,14 @@
+from django import forms
+from django.contrib import admin
+from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.db import IntegrityError
 from django.template import Context, Template, TemplateSyntaxError
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.test.utils import override_settings
 
 import hashbrown
+from .admin import SwitchAdmin
 from .compat import get_user_model
 from .models import Switch
 from .testutils import switches
@@ -255,3 +259,18 @@ class ManagementCommandTestCase(TestCase):
             call_command('switches', force=True)
 
         self.assertEqual(Switch.objects.count(), 0)
+
+
+class SwitchAdminTestCase(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        super(SwitchAdminTestCase, self).setUp()
+
+    def test_admin_form(self):
+        # Set HASHBROWN_ADMIN_FORM to a dotted path string to override the
+        # form used by the Django admin.
+        request = self.factory.get('/')
+        request.user = User()
+        form_class = SwitchAdmin(Switch, admin.site).get_form(request)
+
+        self.assertIsInstance(form_class, forms.ModelForm)
