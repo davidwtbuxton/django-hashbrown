@@ -2,11 +2,12 @@ from django.conf import settings
 from .models import Switch
 
 
-SETTINGS_KEY = 'HASHBROWN_SWITCH_DEFAULTS'
+SWITCH_DEFAULTS_KEY = 'HASHBROWN_SWITCH_DEFAULTS'
+ADMIN_FORM_KEY = 'HASHBROWN_ADMIN_FORM'
 
 
 def is_active(label, user=None):
-    defaults = get_defaults()
+    defaults = get_defaults()[SWITCH_DEFAULTS_KEY]
 
     globally_active = defaults[label].get(
         'globally_active',
@@ -33,4 +34,7 @@ def is_active(label, user=None):
 
 
 def get_defaults():
-    return getattr(settings, SETTINGS_KEY, {})
+    return {
+        SWITCH_DEFAULTS_KEY: getattr(settings, SWITCH_DEFAULTS_KEY, {}),
+        ADMIN_FORM_KEY: getattr(settings, ADMIN_FORM_KEY, ''),
+    }

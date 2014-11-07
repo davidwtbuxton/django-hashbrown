@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from django.utils.six.moves import input
 
 from hashbrown.models import Switch
-from hashbrown.utils import SETTINGS_KEY, is_active, get_defaults
+from hashbrown.utils import SWITCH_DEFAULTS_KEY, is_active, get_defaults
 
 
 class Command(BaseCommand):
@@ -15,7 +15,7 @@ class Command(BaseCommand):
             '--delete',
             action='store_true',
             default=False,
-            help='Delete switches in the database that are not in ' + SETTINGS_KEY,
+            help='Delete switches in the database that are not in ' + SWITCH_DEFAULTS_KEY,
         ),
         make_option(
             '--force',
@@ -43,7 +43,7 @@ def create_switches(stderr):
     """Create switches listed in HASHBROWN_SWITCH_DEFAULTS which aren't in
     the database yet.
     """
-    defaults = get_defaults()
+    defaults = get_defaults()[SWITCH_DEFAULTS_KEY]
     installed_switches = set(Switch.objects.values_list('label', flat=True))
     missing_switches = set(defaults) - installed_switches
 
@@ -55,7 +55,7 @@ def create_switches(stderr):
 
 
 def delete_switches(stderr, force=False):
-    defaults = get_defaults()
+    defaults = get_defaults()[SWITCH_DEFAULTS_KEY]
     installed_switches = set(Switch.objects.values_list('label', flat=True))
     unknown_switches = sorted(installed_switches - set(defaults))
 
@@ -72,7 +72,7 @@ def delete_switches(stderr, force=False):
 
 
 def ask_permission(stderr, switches):
-    stderr.write('The following switches are in the database but not in %s:' % SETTINGS_KEY)
+    stderr.write('The following switches are in the database but not in %s:' % SWITCH_DEFAULTS_KEY)
 
     for label in switches:
         stderr.write(label)
